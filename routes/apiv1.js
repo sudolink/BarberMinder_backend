@@ -5,24 +5,49 @@ const apiv1 = Router();
 
 
 apiv1.get("/getCustomers", (req, res) => {
-    console.log("Apiv1 req")
     let dbConn = makeNewDBconn();
     dbConn.connect();
     let dbResponse = { status: 500, data: null };
     dbConn.query("SELECT * FROM customers", (err, rows, fields) => {
         if (err) {
             res.status(500).send(err);
+            console.log(err);
             dbConn.end();
         } else {
             if (rows.length < 1) {
                 res.status(404).send("Query returned 0 results");
                 dbConn.end();
             } else {
-                res.status(200).send(rows[0]);
+                res.status(200).send(rows);
                 dbConn.end();
             }
         }
     })
+})
+
+apiv1.get("/getCustomer/", (req, res) => {
+    let dbConn = makeNewDBconn();
+    dbConn.connect();
+    //check if query params are present
+    if (req.query.name) {
+        dbConn.query(`SELECT name FROM customers WHERE name LIKE '%${req.query.name}%'`, (err, rows, fields) => {
+            if (err) {
+                res.status(500).send(err);
+                console.log(err);
+                dbConn.end();
+            }
+            else if(rows.length < 1) {
+                res.status(404).send("Query returned 0 results");
+                dbConn.end();
+            } else {
+                res.status(200).send(rows);
+                dbConn.end();
+            }
+        })
+    } else {
+        res.status(400).send("Missing query params");
+        dbConn.end();
+    }
 })
 
 apiv1.post("/makeNewCustomer", (req, res) => {

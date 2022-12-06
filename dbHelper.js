@@ -1,6 +1,8 @@
 import * as dotenv from "dotenv";
 dotenv.config();
-import mysql from "mysql";
+import mysql from "mysql2";
+
+console.log(process.env.DB_URL, process.env.DB_U);
 
 function makeNewDBconn() {
     const dbConn = mysql.createConnection({

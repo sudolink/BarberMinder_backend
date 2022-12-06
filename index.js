@@ -6,7 +6,13 @@ import { apiv1 } from "./routes/apiv1.js";
 const PORT = process.env.APP_PORT || 5000
 const app = express();
 
-app.use("/apiv1", apiv1);
+function requestLogger(req, res, next) {
+    console.log('Received a request:', req.method, req.path);
+    next();
+}
+
+app.use(requestLogger);
+app.use("/api/v1", apiv1);
 
 
 app.listen(PORT, () => {
