@@ -25,7 +25,7 @@ apiv1.get("/getCustomers", (req, res) => {
     })
 })
 
-apiv1.get("/getCustomer/", (req, res) => {
+apiv1.get("/getCustomerLike/", (req, res) => {
     let dbConn = makeNewDBconn();
     dbConn.connect();
     //check if query params are present
@@ -49,6 +49,31 @@ apiv1.get("/getCustomer/", (req, res) => {
         dbConn.end();
     }
 })
+
+apiv1.get("/getCustomerById/", (req, res) => {
+    let dbConn = makeNewDBconn();
+    dbConn.connect();
+    //check if query params are present
+    if (req.query.id) {
+        dbConn.query(`SELECT * FROM customers WHERE id = ${req.query.id}`, (err, rows, fields) => {
+            if (err) {
+                res.status(500).send(err);
+                console.log(err);
+                dbConn.end();
+            }else if(rows.length < 1){
+                res.status(404).send("Query returned 0 results");
+                dbConn.end();
+            }else {
+                res.status(200).send(rows);
+                dbConn.end();
+            }
+        })
+    } else {
+        res.status(400).send("Missing query params");
+        dbConn.end();
+    }
+})
+
 
 apiv1.post("/makeNewCustomer", (req, res) => {
     console.log(req.query)
