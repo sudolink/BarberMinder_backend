@@ -30,7 +30,7 @@ apiv1.get("/getCustomer/", (req, res) => {
     dbConn.connect();
     //check if query params are present
     if (req.query.name) {
-        dbConn.query(`SELECT name FROM customers WHERE name LIKE '%${req.query.name}%'`, (err, rows, fields) => {
+        dbConn.query(`SELECT * FROM customers WHERE name LIKE '%${req.query.name}%'`, (err, rows, fields) => {
             if (err) {
                 res.status(500).send(err);
                 console.log(err);
