@@ -11,9 +11,11 @@ function requestLogger(req, res, next) {
     next();
 }
 
+//built in body parser
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 app.use(requestLogger);
 app.use("/api/v1", apiv1);
-
 
 app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`)

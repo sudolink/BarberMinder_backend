@@ -51,10 +51,10 @@ apiv1.get("/getCustomerLike/", (req, res) => {
 })
 
 apiv1.get("/getCustomerById/", (req, res) => {
-    let dbConn = makeNewDBconn();
-    dbConn.connect();
     //check if query params are present
     if (req.query.id) {
+        let dbConn = makeNewDBconn();
+        dbConn.connect();
         dbConn.query(`SELECT * FROM customers WHERE id = ${req.query.id}`, (err, rows, fields) => {
             if (err) {
                 res.status(500).send(err);
@@ -70,7 +70,6 @@ apiv1.get("/getCustomerById/", (req, res) => {
         })
     } else {
         res.status(400).send("Missing query params");
-        dbConn.end();
     }
 })
 
@@ -95,9 +94,49 @@ apiv1.post("/makeNewCustomer", (req, res) => {
     }
 })
 
+apiv1.get("/getAppointmentsForDay", (req, res) => {
+    console.log(req.query)
+    if(req.query?.date != undefined){
+        let dbConn = makeNewDBconn();
+        dbConn.connect();
+        let getApptsQuery = `SELECT * FROM appointments WHERE date = "${req.query.date}";`;
+        dbConn.query(getApptsQuery, (err, rows, fields) => {
+            if(err){
+                res.status(500).send(err);
+                dbConn.end();
+            }else{
+                if(rows.length < 1){
+                    res.status(404).send("Query returned 0 results");
+                    dbConn.end();
+                }else{
+                    res.status(200).send(rows);
+                    dbConn.end();
+                }
+        }
+        })
+    }else{
+        res.status(400).send("Missing query params");
+    }
+})
+
 apiv1.post("/makeAppointment", (req, res) => {
-    if (req?.query?.time != undefined && req?.query?.customer != undefined) {
-        res.status(200).send("not implemented yet");
+    console.log(req.query)
+    if(req.query?.timestamp != undefined && req.query?.customer_id != undefined){
+        let dbConn = makeNewDBconn();
+        dbConn.connect();
+        let makeApptQuery = `INSERT INTO appointments(customer, timestamp) VALUES (${req.query.customer_id}, "${req.query.timestamp}");`;
+        dbConn.query(makeApptQuery, (err, rows, fields) => {
+            if(err){
+                res.status(500).send(err);
+                console.log(err);
+                dbConn.end();
+            }else{
+                res.status(200).send(rows);
+                dbConn.end();
+            }
+        })
+    }else{
+        res.status(400).send(`Missing query params! ${req.query.timestamp == undefined && "timestamp"} ${req.query.customer_id == undefined && "customer_id"}}`);
     }
 })
 
