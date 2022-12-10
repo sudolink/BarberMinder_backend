@@ -64,6 +64,7 @@ apiv1.get("/getCustomerById/", (req, res) => {
                 res.status(404).send("Query returned 0 results");
                 dbConn.end();
             }else {
+
                 res.status(200).send(rows);
                 dbConn.end();
             }
@@ -91,6 +92,46 @@ apiv1.post("/makeNewCustomer", (req, res) => {
     }
     else {
         res.status(404).send(`Missing data fields!`);
+    }
+})
+
+apiv1.get('/getAppointments', (req, res) => {
+    if(req.query?.timestamp != null){
+        let dbRe = null;
+        let dbConn = makeNewDBconn();
+        dbConn.connect();
+        //get all appointments that occur at and after the timestamp
+        let getApptsWithCustomersQuery = 
+            `SELECT a.appointment_id, a.customer, a.timestamp, c.name, c.phone
+            FROM appointments a
+            INNER JOIN customers c ON a.customer = c.id
+            WHERE a.timestamp >= ${req.query.timestamp};
+            `;
+        // console.log("query to execute -->", getApptsWithCustomersQuery)
+        dbConn.query(getApptsWithCustomersQuery, (err, rows, fields) => {
+            if(err){
+                res.status(500).send(err);
+                dbConn.end();
+            }else if( rows.length < 1){
+                res.status(404).send("Query returned 0 results");
+                dbConn.end();
+            }else{
+                dbRe = rows.map(appt => {
+                    return {
+                        time: appt.timestamp,
+                        customer: {
+                            id: appt.customer,
+                            name: appt.name,
+                            phone: appt.phone
+                        }
+                    }
+                })
+                res.status(200).send(dbRe);
+                dbConn.end();
+            }
+        })
+    }else{
+        res.status(400).send("Missing query params");
     }
 })
 
