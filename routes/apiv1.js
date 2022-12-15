@@ -26,10 +26,10 @@ apiv1.get("/getCustomers", (req, res) => {
 })
 
 apiv1.get("/getCustomerLike/", (req, res) => {
-    let dbConn = makeNewDBconn();
-    dbConn.connect();
     //check if query params are present
     if (req.query.name) {
+        let dbConn = makeNewDBconn();
+        dbConn.connect();
         dbConn.query(`SELECT name,id FROM customers WHERE name LIKE '%${req.query.name}%'`, (err, rows, fields) => {
             if (err) {
                 res.status(500).send(err);
@@ -46,7 +46,6 @@ apiv1.get("/getCustomerLike/", (req, res) => {
         })
     } else {
         res.status(400).send("Missing query params");
-        dbConn.end();
     }
 })
 
@@ -101,11 +100,14 @@ apiv1.get('/getAppointments', (req, res) => {
         let dbConn = makeNewDBconn();
         dbConn.connect();
         //get all appointments that occur at and after the timestamp
+        let [daySecs, weekSecs, monthSecs, yearSecs] = [86400,86400 * 7, 86400 * 30, 86400 * 365]
+        let twoWeeksAgo = req.query.timestamp - (weekSecs * 2);
+        let twoWeeksFromNow = req.query.timestamp + (weekSecs * 2);
         let getApptsWithCustomersQuery = 
             `SELECT a.appointment_id, a.customer, a.timestamp, c.name, c.phone
             FROM appointments a
             INNER JOIN customers c ON a.customer = c.id
-            WHERE a.timestamp >= ${req.query.timestamp};
+            WHERE a.timestamp <= ${twoWeeksFromNow} OR a.timestamp >= ${twoWeeksAgo};
             `;
         // console.log("query to execute -->", getApptsWithCustomersQuery)
         dbConn.query(getApptsWithCustomersQuery, (err, rows, fields) => {
@@ -130,6 +132,7 @@ apiv1.get('/getAppointments', (req, res) => {
                 dbConn.end();
             }
         })
+        dbConn.end();
     }else{
         res.status(400).send("Missing query params");
     }
