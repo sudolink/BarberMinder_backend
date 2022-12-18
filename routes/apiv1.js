@@ -121,6 +121,7 @@ apiv1.get('/getAppointments', (req, res) => {
                 dbRe = rows.map(appt => {
                     return {
                         time: appt.timestamp,
+                        id: appt.appointment_id,
                         customer: {
                             id: appt.customer,
                             name: appt.name,
@@ -132,7 +133,6 @@ apiv1.get('/getAppointments', (req, res) => {
                 dbConn.end();
             }
         })
-        dbConn.end();
     }else{
         res.status(400).send("Missing query params");
     }
