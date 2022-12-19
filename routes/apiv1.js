@@ -184,6 +184,93 @@ apiv1.post("/makeAppointment", (req, res) => {
     }
 })
 
+apiv1.delete("/deleteAppointment",(req,res) => {
+    console.log(req.query);
+    if(req.query?.appointment_id != undefined){
+        let dbConn = makeNewDBconn();
+        dbConn.connect();
+        let tempApptID = req.query.appointment_id;
+        let deleteApptQuery = `DELETE FROM appointments WHERE appointment_id = ?;`;
+        dbConn.query(deleteApptQuery, [tempApptID], (err, rows, fields) => {
+            if(err){
+                res.status(500).send(err);
+                dbConn.end();
+            }else{
+                res.status(200).send(rows);
+                dbConn.end();
+            }
+        })
+    }else{
+        res.status(400).send(`Query params not present! > appointment_id = ${req.query.appointment_id}`);
+    }
+})
+
+apiv1.get("/allIssues", (req, res) => {
+    let dbConn = makeNewDBconn();
+    dbConn.connect();
+    let getIssuesQuery = `SELECT * FROM issues;`;
+    dbConn.query(getIssuesQuery, (err, rows, fields) => {
+        if(err){
+            res.status(500).send(err);
+            dbConn.end();
+        }else{
+            if(rows.length < 1){
+                res.status(404).send("Query returned 0 results");
+                dbConn.end();
+            }else{
+                res.status(200).send(rows);
+                dbConn.end();
+            }
+        }
+    })
+})
+
+apiv1.post("/newIssue", (req, res) => {
+    if(req.body?.title != undefined){
+        let dbConn = makeNewDBconn();
+        dbConn.connect();
+        let tempTitle = req.body.title;
+        let tempText = req.body.description;
+        let makeIssueQuery = `INSERT INTO issues(body,title) VALUES (?,?);`;
+        let params = [tempText, tempTitle]
+        dbConn.query(makeIssueQuery, params,(err, rows, fields) => {
+            if(err){
+                res.status(500).send(err);
+                console.log(err);
+                dbConn.end();
+            }else{
+                res.status(200).send(rows);
+                dbConn.end();
+            }
+        })
+    }else{
+        res.status(400).send(`Missing query params! ${req.query.issue == undefined && "issue"}`);
+    }
+})
+
+apiv1.delete("/deleteIssue", (req, res) => {
+    console.log(req.body, req.params, req.query)
+    if(req.query?.issue_id != undefined){
+        let dbConn = makeNewDBconn();
+        dbConn.connect();
+        let tempId = req.query.issue_id;
+        let deleteIssueQuery = `DELETE FROM issues WHERE issue_id = ?;`;
+        dbConn.query(deleteIssueQuery, [tempId],(err, rows, fields) => {
+            if(err){
+                res.status(500).send(err);
+                console.log(err);
+                dbConn.end();
+            }else{
+                res.status(200).send(rows);
+                dbConn.end();
+            }
+        })
+    }else{
+        res.status(400).send(`Missing query params! ${req.query.issue_id == undefined && "issue_id"}`);
+    }
+})
+
+
 export {
     apiv1
 }
